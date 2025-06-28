@@ -33,6 +33,7 @@ public class Database {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "title TEXT NOT NULL," +
                 "author_id INTEGER NOT NULL," +
+                "genre TEXT," + 
                 "available BOOLEAN DEFAULT TRUE," +
                 "FOREIGN KEY (author_id) REFERENCES authors(id)" +
                 ")");
