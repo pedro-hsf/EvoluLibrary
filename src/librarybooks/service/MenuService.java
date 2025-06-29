@@ -28,7 +28,7 @@ public class MenuService {
             System.out.println("0. Sair");
             System.out.println("==============================\n");
 
-            System.out.print("Escolha uma opção: ");
+            System.out.print("Escolha uma opçao: ");
             int choice = scanner.nextInt();
             scanner.nextLine(); 
 
@@ -52,7 +52,7 @@ public class MenuService {
                     System.out.println("Saindo do sistema...");
                     return;
                 default:
-                    System.out.println("Opção inválida!");
+                    System.out.println("Opçao inválida!");
             }
         }
     }
@@ -83,7 +83,7 @@ public class MenuService {
                 case 4:
                     return;
                 default:
-                    System.out.println("Opção inválida!");
+                    System.out.println("Opçao invalida!");
             }
         }
     }
@@ -228,4 +228,108 @@ public class MenuService {
             System.out.println("Erro ao excluir usuário: " + e.getMessage());
         }
     }   
+
+    private static void manageBooks() throws SQLException {
+        while (true) {
+            System.out.println("\n======= GERENCIAR LIVROS =======");
+            System.out.println("1. Adicionar Livro");
+            System.out.println("2. Listar Livros");
+            System.out.println("3. Excluir Livro");
+            System.out.println("4. Voltar");
+            System.out.println("=================================\n");
+
+            System.out.print("Escolha uma opção: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    addBook();
+                    break;
+                case 2:
+                    listBooks();
+                    break;
+                case 3:
+                    deleteBook();
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        }
+    }
+
+    private static void addBook() throws SQLException {
+        System.out.println("\n-- ADICIONAR LIVRO --\n");
+        
+        System.out.print("Digite o titulo do livro: ");
+        String title = scanner.nextLine();
+         
+        System.out.println("\nID | NOME");
+        AuthorDAO.getAllAuthors().forEach(author ->
+            System.out.printf("%2d | %s%n", author.getId(), author.getName()));
+
+        System.out.print("\nDigite o ID do autor: ");
+        int authorId = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("Digite o genero: ");
+        String genre = scanner.nextLine();
+
+        try {
+            Author author = AuthorDAO.getAuthorById(authorId);
+            if (author == null) {
+                System.out.println("Autor não encontrado!");
+                return;
+            }
+
+            Book book = new Book(title, author, genre);
+            BookDAO.addBook(book);
+
+            AuthorDAO.updateBooksCount(authorId, 1);
+            System.out.println("Livro adicionado com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao adicionar livro: " + e.getMessage());
+        }
+    }
+
+    private static void listBooks() {
+        System.out.println("\n-- LISTAR LIVROS --");
+        System.out.println("ID | TITULO | AUTOR | DISPONIVEL");
+        
+        try {
+            List<Book> books = BookDAO.getAllBooks();
+            for (Book book : books) {
+                System.out.println(book.getId() + " | " + book.getTitle() + " | " + book.getAuthor().getName() + " | " + (book.isAvailable() ? "Sim" : "Não"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar livros: " + e.getMessage());
+        }
+    }
+
+    private static void deleteBook() throws SQLException {
+        System.out.println("\n-- EXCLUIR LIVRO --\n");
+        System.out.println("ID | TITULO");
+
+        BookDAO.getAllBooks().forEach(book ->
+            System.out.printf("%2d | %s%n", book.getId(), book.getTitle()));
+
+        System.out.print("\nSelecione o ID do livro: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+        
+        try {
+            Book book = BookDAO.getBookById(id);
+            if (book != null && !book.isAvailable()) {
+                System.out.println("Não é possível excluir livros emprestados!");
+                return;
+            }
+            
+            BookDAO.deleteBook(id);
+            System.out.println("Livro excluído com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao excluir livro: " + e.getMessage());
+        }
+    }
 }
