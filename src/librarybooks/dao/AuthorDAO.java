@@ -7,8 +7,18 @@ import java.util.List;
 import librarybooks.database.Database;
 import librarybooks.model.Author;
 
+/**
+ * Classe DAO para a entidade Author.
+ * Fornece métodos para interagir com a tabela 'authors' no banco de dados.
+ */
 public class AuthorDAO {
     
+    /**
+     * Adiciona um novo autor ao banco de dados.
+     * O ID do autor é gerado automaticamente pelo banco de dados e definido no objeto Author.
+     * @param author O objeto Author a ser adicionado.
+     * @throws SQLException Se ocorrer um erro de acesso ao banco de dados.
+     */
     public static void addAuthor(Author author) throws SQLException {
         String sql = "INSERT INTO authors(name, main_genre, books_in_collection) VALUES(?, ?, ?)";
         
@@ -28,7 +38,11 @@ public class AuthorDAO {
         }
     }
     
-    
+    /**
+     * Retorna uma lista de todos os autores presentes no banco de dados.
+     * @return Uma lista de objetos Author.
+     * @throws SQLException Se ocorrer um erro de acesso ao banco de dados.
+     */
     public static List<Author> getAllAuthors() throws SQLException {
         List<Author> authors = new ArrayList<>();
         String sql = "SELECT * FROM authors";
@@ -50,7 +64,12 @@ public class AuthorDAO {
         return authors;
     }
     
-    
+    /**
+     * Retorna um autor específico pelo seu ID.
+     * @param id O ID do autor a ser buscado.
+     * @return O objeto Author correspondente ao ID, ou null se não for encontrado.
+     * @throws SQLException Se ocorrer um erro de acesso ao banco de dados.
+     */
     public static Author getAuthorById(int id) throws SQLException {
         String sql = "SELECT * FROM authors WHERE id = ?";
         
@@ -73,7 +92,12 @@ public class AuthorDAO {
         return null;
     }
     
-    
+    /**
+     * Atualiza a quantidade de livros para um autor específico.
+     * @param authorId O ID do autor.
+     * @param increment O valor a ser adicionado na quantidade de livros.
+     * @throws SQLException Se ocorrer um erro de acesso ao banco de dados.
+     */
     public static void updateBooksCount(int authorId, int increment) throws SQLException {
         String sql = "UPDATE authors SET books_in_collection = books_in_collection + ? WHERE id = ?";
         
@@ -86,44 +110,13 @@ public class AuthorDAO {
         }
     }
     
-    
-    public static List<Author> getAuthorsByGenre(String genre) throws SQLException {
-        List<Author> authors = new ArrayList<>();
-        String sql = "SELECT * FROM authors WHERE main_genre = ?";
-        
-        try (Connection conn = Database.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, genre);
-            ResultSet rs = pstmt.executeQuery();
-            
-            while (rs.next()) {
-                Author author = new Author(
-                    rs.getString("name"),
-                    rs.getString("main_genre")
-                );
-                author.setId(rs.getInt("id"));
-                author.setBooksInCollection(rs.getInt("books_in_collection"));
-                authors.add(author);
-            }
-        }
-        return authors;
-    }
-    
-    
-    public static void updateAuthorGenre(int authorId, String newGenre) throws SQLException {
-        String sql = "UPDATE authors SET main_genre = ? WHERE id = ?";
-        
-        try (Connection conn = Database.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, newGenre);
-            pstmt.setInt(2, authorId);
-            pstmt.executeUpdate();
-        }
-    }
-    
-    
+    /**
+     * Exclui um autor do banco de dados.
+     * Um autor só pode ser excluído se não tiver livros associados na coleção.
+     * @param authorId O ID do autor a ser excluído.
+     * @return true se o autor foi excluído com sucesso, false caso contrário
+     * @throws SQLException Se ocorrer um erro de acesso ao banco de dados.
+     */
     public static boolean deleteAuthor(int authorId) throws SQLException {
         
         Author author = getAuthorById(authorId);
@@ -141,3 +134,4 @@ public class AuthorDAO {
         }
     }
 }
+
