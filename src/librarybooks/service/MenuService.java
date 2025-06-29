@@ -332,4 +332,166 @@ public class MenuService {
             System.out.println("Erro ao excluir livro: " + e.getMessage());
         }
     }
+
+    private static void manageLoans() throws SQLException {
+        while (true) {
+            System.out.println("\n======= GERENCIAR EMPRESTIMOS =======\n");
+            System.out.println("1. Realizar Emprestimo");
+            System.out.println("2. Devolver Livro");
+            System.out.println("3. Listar Emprestimos Ativos");
+            System.out.println("4. Voltar");
+            System.out.println("=================================\n");
+
+            System.out.print("Escolha uma opção: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); 
+
+            switch (choice) {
+                case 1:
+                    makeLoan();
+                    break;
+                case 2:
+                    returnBook();
+                    break;
+                case 3:
+                    listActiveLoans();
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        }
+    }
+
+    private static void makeLoan() throws SQLException {
+        System.out.println("\n==== REALIZAR EMPRESTIMO ====\n");
+        UserDAO.getAllUsers().forEach(user ->
+            System.out.printf("%2d | %s%n", user.getId(), user.getName()));
+    
+        System.out.print("\nDigite o ID do usuario: ");
+        int userId = scanner.nextInt();
+
+        System.out.println("ID | TITULO");
+        BookDAO.getAllBooks().forEach(book ->
+            System.out.printf("%2d | %s%n", book.getId(), book.getTitle()));
+
+        System.out.print("\nDigite o ID do livro: ");
+        int bookId = scanner.nextInt();
+        scanner.nextLine();
+        
+        try {
+            User user = UserDAO.getUserById(userId);
+            Book book = BookDAO.getBookById(bookId);
+            
+            if (user == null || book == null) {
+                System.out.println("Usuário ou livro não encontrado!");
+                return;
+            }
+            
+            if (user.hasLoan()) {
+                System.out.println("Usuario ja possui emprestimo ativo!");
+                return;
+            }
+            
+            if (!book.isAvailable()) {
+                System.out.println("Livro indisponivel para emprestimo!");
+                return;
+            }
+            
+            Loan loan = new Loan(book, user);
+            LoanDAO.addLoan(loan);
+            System.out.println("Emprestimo realizado com sucesso!");
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao realizar empréstimo: " + e.getMessage());
+        }
+    }
+
+    private static void returnBook() {
+        System.out.println("\n==== DEVOLVER LIVRO ====\n");
+        System.out.println("Listar emprestimos ativos:");
+        
+        try {
+            List<Loan> activeLoans = LoanDAO.getActiveLoans();
+        
+            if (activeLoans.isEmpty()) {
+            System.out.println("Não há empréstimos ativos no momento.");
+            return;
+        }
+        
+            System.out.println("\nEMPRÉSTIMOS ATIVOS:");
+            System.out.println("ID | USUÁRIO | LIVRO | DATA EMPRÉSTIMO");
+            System.out.println("--------------------------------------");
+        
+            for (Loan loan : activeLoans) {
+                System.out.printf("%2d | %-15s | %-20s | %s%n", loan.getId(), loan.getUser().getName(), loan.getBook().getTitle(), loan.getLoanDate());
+        }
+        
+            System.out.print("\nDigite o ID do empréstimo para devolução: ");
+            int loanId = scanner.nextInt();
+            scanner.nextLine(); 
+        
+            boolean success = LoanDAO.returnLoan(loanId);
+        
+            if (success) {
+                Loan loan = activeLoans.stream().filter(l -> l.getId() == loanId).findFirst().orElse(null);
+            
+                if (loan != null) {
+                    BookDAO.updateBookAvailability(loan.getBook().getId(), true);
+                    UserDAO.updateUserLoanStatus(loan.getUser().getId(), false);
+            }
+            
+            System.out.println("Livro devolvido com sucesso!");
+        }
+        
+          else {
+            System.out.println("Não foi possível devolver o livro. Verifique o ID do empréstimo.");
+        }
+        
+    } catch (SQLException e) {
+        System.out.println("Erro ao processar devolução: " + e.getMessage());
+    } catch (Exception e) {
+        System.out.println("Erro inesperado: " + e.getMessage());
+    }
+}
+
+    private static void listActiveLoans() {
+        System.out.println("\n==== LISTAR EMPRESTIMOS ATIVOS ====");
+        
+        try {
+            List<Loan> activeLoans = LoanDAO.getActiveLoans();
+
+            if (activeLoans.isEmpty()){
+                System.out.println("Nenhum emprestimo ativo no momento!");
+                return;
+            }
+
+            System.out.println("ID | USUÁRIO | LIVRO | DATA EMPRÉSTIMO");
+
+            for (Loan loan : activeLoans)  {
+                System.out.printf("%2d | %-15s | %-20s | %s%n", loan.getId(), loan.getUser().getName(), loan.getBook().getTitle(), loan.getLoanDate());
+            }
+        }   catch (SQLException e) {
+            System.out.println("Erro ao listar emprestimos ativos: " + e.getMessage());
+        }
+    }
+
+    private static void viewAllData() {
+        System.out.println("\n======= VISUALIZAR TODOS OS DADOS =======");
+        
+        System.out.println("\nLista de Autores");
+        listAuthors();
+        
+        System.out.println("\nLista de Usuarios");
+        listUsers();
+        
+        System.out.println("\nLista de Livros");
+        listBooks();
+        
+        System.out.println("\nLista de Emprestimos Ativos");
+        listActiveLoans();
+        
+        System.out.println("\n=================================");
+    }
 }
