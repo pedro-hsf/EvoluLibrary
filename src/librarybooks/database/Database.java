@@ -63,7 +63,6 @@ public class Database {
                 "FOREIGN KEY (user_id) REFERENCES users(id)" +
                 ")");
             
-            // Índices para melhorar o desempenho das consultas
             stmt.execute("CREATE INDEX IF NOT EXISTS idx_author_genre ON authors(main_genre)");
             stmt.execute("CREATE INDEX IF NOT EXISTS idx_author_name ON authors(name)");
             stmt.execute("CREATE INDEX IF NOT EXISTS idx_book_title ON books(title)");
@@ -80,13 +79,14 @@ public class Database {
      *
      * @param conn Objeto Connection que será fechado.
      */
-    public static void closeConnection(Connection conn) {
-    try {
+    public static void close(Connection conn) {
         if (conn != null) {
-            conn.close();
-        }
-    } catch (SQLException e) {
-        System.err.println("Erro ao fechar conexão: " + e.getMessage());
+            try {
+                conn.close();
+                System.out.println("Conexão com o banco de dados fechada.");
+            } catch (SQLException e) {
+                System.err.println("Erro ao fechar a conexão com o banco de dados: " + e.getMessage());
+            }
         }
     }
 }
