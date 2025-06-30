@@ -141,5 +141,5 @@ Ao executar da maneira que achar mais adequado, você será apresentado a um men
 
 ## Documentação com Javadoc
 
-Para ajudar na organização do sistema, todas as classes e métodos públicos foram documentados usando o Javadoc.
+Para ajudar na organização do sistema, todas as classes e métodos públicos foram documentados usando o Javadoc que você pode acessar clicando [AQUI](https://pedro-hsf.github.io/EvoluLibrary/) ou na área "sobre", no canto superior direito no inicio do repositório.
 
